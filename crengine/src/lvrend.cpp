@@ -929,12 +929,17 @@ int lengthToPx( css_length_t val, int base_px, int base_em )
         return ( (base_em * val.value) >> 8 );
     case css_val_percent:
         return ( (base_px * val.value) / 100 );
-    case css_val_unspecified:
+    case css_val_pt: // 1/72 in         // somewhere here below pt is treated as 1.5 px. I assume the same ratio so 256/1.5 = 170
+        return val.value / 170;         // pc, in, cm and mm comes accordingly.
+    case css_val_pc: // 12 pt           // As far as we do not know the resolution of the screen, this is obviously an approximation
+        return val.value * 12 / 170;    // but is better than treat as 0
     case css_val_in: // 2.54 cm
+        return val.value * 72 / 170;
     case css_val_cm:
+        return val.value * 28 / 170;
     case css_val_mm:
-    case css_val_pt: // 1/72 in
-    case css_val_pc: // 12 pt
+        return val.value * 3 / 170;
+    case css_val_unspecified:
     case css_val_inherited:
     default:
         // not supported: treat as 0
@@ -992,6 +997,21 @@ void renderFinalBlock( ldomNode * enode, LFormattedText * txform, RenderRectAcce
             case css_val_em:
                 ident = len.value * enode->getFont()->getSize() / 256;
                 break;
+            case css_val_pt:
+                ident = len.value / 170;
+                break;
+            case css_val_pc:
+                ident = len.value * 12 / 170;
+                break;
+            case css_val_in: // 2.54 cm
+                ident = len.value * 72 / 170;
+                break;
+            case css_val_cm:
+                ident = len.value * 28 / 170;
+                break;
+            case css_val_mm:
+                ident = len.value * 3 / 170;
+                break;
             default:
                 ident = 0;
                 break;
@@ -1007,6 +1027,21 @@ void renderFinalBlock( ldomNode * enode, LFormattedText * txform, RenderRectAcce
                 break;
             case css_val_em:
                 line_h = len.value * 16 / 256;
+                break;
+            case css_val_pt:
+                line_h = (len.value / 170) * 16 / enode->getFont()->getHeight();
+                break;
+            case css_val_pc:
+                line_h = (len.value * 12 / 170) * 16 / enode->getFont()->getHeight();
+                break;
+            case css_val_in: // 2.54 cm
+                line_h = (len.value * 72 / 170) * 16 / enode->getFont()->getHeight();
+                break;
+            case css_val_cm:
+                line_h = (len.value * 28 / 170) * 16 / enode->getFont()->getHeight();
+                break;
+            case css_val_mm:
+                line_h = (len.value * 3 / 170) * 16 / enode->getFont()->getHeight();
                 break;
             default:
                 break;
@@ -1248,6 +1283,21 @@ void renderFinalBlock( ldomNode * enode, LFormattedText * txform, RenderRectAcce
                 break;
             case css_val_em:
                 letter_spacing = (lInt8)(len.value * font->getSize() / 256);
+                break;
+            case css_val_pt:
+                letter_spacing = (lInt8)(len.value / 170);
+                break;
+            case css_val_pc:
+                letter_spacing = (lInt8)(len.value * 12 / 170);
+                break;
+            case css_val_in:
+                letter_spacing = (lInt8)(len.value * 72 / 170);
+                break;
+            case css_val_cm:
+                letter_spacing = (lInt8)(len.value * 28 / 170);
+                break;
+            case css_val_mm:
+                letter_spacing = (lInt8)(len.value * 3 / 170);
                 break;
             default:
                 letter_spacing = 0;
@@ -1791,12 +1841,22 @@ void convertLengthToPx( css_length_t & val, int base_px, int base_em )
     case css_val_percent:
         val = css_length_t ( (base_px * val.value) / 100 );
         break;
-    case css_val_unspecified:
-    case css_val_in: // 2.54 cm
-    case css_val_cm:
-    case css_val_mm:
     case css_val_pt: // 1/72 in
+        val = css_length_t ( val.value / 170 );
+        break;
     case css_val_pc: // 12 pt
+        val = css_length_t ( val.value * 12 / 170 );
+        break;
+    case css_val_in: // 2.54 cm
+        val = css_length_t ( val.value * 72 / 170 );
+        break;
+    case css_val_cm:
+        val = css_length_t ( val.value * 28 / 170 );
+        break;
+    case css_val_mm:
+        val = css_length_t ( val.value * 3 / 170 );
+        break;
+    case css_val_unspecified:
     case css_val_color:
         // not supported: use inherited value
         val = css_length_t ( val.value );
@@ -1879,6 +1939,22 @@ void setNodeStyle( ldomNode * enode, css_style_ref_t parent_style, LVFontRef par
         case css_val_em: \
             pstyle->fld.type = css_val_px; \
             pstyle->fld.value = parent_style->font_size.value * pstyle->fld.value / 256; \
+            break; \
+        case css_val_pc: \
+            pstyle->fld.type = css_val_px; \
+            pstyle->fld.value = pstyle->fld.value * baseFontSize / 256; \
+            break; \
+        case css_val_in: \
+            pstyle->fld.type = css_val_px; \
+            pstyle->fld.value = pstyle->fld.value * baseFontSize * 72 / (256 * 12); \
+            break; \
+        case css_val_cm: \
+            pstyle->fld.type = css_val_px; \
+            pstyle->fld.value = pstyle->fld.value * baseFontSize * 28 / (256 * 12); \
+            break; \
+        case css_val_mm: \
+            pstyle->fld.type = css_val_px; \
+            pstyle->fld.value = pstyle->fld.value * baseFontSize * 3 / (256 * 12); \
             break; \
         default: \
             pstyle->fld.type = css_val_px; \
