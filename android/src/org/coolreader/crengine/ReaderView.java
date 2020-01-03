@@ -5603,7 +5603,7 @@ public class ReaderView implements android.view.SurfaceHolder.Callback, Settings
 				public void work() {
 					PositionProperties pos = doc.getPositionProps(null);
 					if (pos != null && pos.pageCount > 0) {
-						int pageNumber = pos.pageCount * percent / 100;
+						int pageNumber = (pos.pageCount - 1) * percent / 100;
 						doCommandFromBackgroundThread(ReaderCommand.DCMD_GO_PAGE, pageNumber);
 					}
 				}
