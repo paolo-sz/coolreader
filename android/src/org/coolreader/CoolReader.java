@@ -740,6 +740,7 @@ public class CoolReader extends BaseActivity {
 			}
 			onUserActivity();
 		}
+		setSystemUiVisibility();
 	}
 
 	public void showReader() {

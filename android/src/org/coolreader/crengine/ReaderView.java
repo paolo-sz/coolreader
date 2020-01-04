@@ -129,6 +129,7 @@ public class ReaderView implements android.view.SurfaceHolder.Callback, Settings
 			if (hasWindowFocus) {
 				mActivity.einkRefresh();
 				startStats();
+				mActivity.setSystemUiVisibility();
 			} else
 				stopStats();
 			super.onWindowFocusChanged(hasWindowFocus);
