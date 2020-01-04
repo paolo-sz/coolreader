@@ -18,6 +18,8 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.widget.ImageButton;
 import android.widget.TextView;
+import android.view.inputmethod.InputMethodManager;
+import android.content.Context;
 
 public class BaseDialog extends Dialog {
 
@@ -105,7 +107,29 @@ public class BaseDialog extends Dialog {
 		contentsLayout.removeAllViews();
 		contentsLayout.addView(view);
 	}
-	
+
+	public void dismiss()
+	{
+		if (getContext() != null) {
+			if (getContext().getSystemService(Context.INPUT_METHOD_SERVICE) != null) {
+				InputMethodManager imm = (InputMethodManager) getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+				if (imm != null) {
+					if (getWindow() != null)
+					{
+						if (getWindow().getCurrentFocus() != null)
+						{
+							if (getWindow().getCurrentFocus().getWindowToken() != null)
+							{
+								imm.hideSoftInputFromWindow(getWindow().getCurrentFocus().getWindowToken(), 0);
+							}
+						}
+					}
+				}
+			}
+		}
+		super.dismiss();
+	}
+
 	protected void onPositiveButtonClick()
 	{
 		// override it
