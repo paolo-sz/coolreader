@@ -245,7 +245,8 @@ public class FileBrowser extends LinearLayout implements FileInfoChangeListener 
 	}
 	
 	public void onThemeChanged() {
-		createListView(true);
+		if (mListView == null)
+			createListView(true);
 		currentListAdapter.notifyDataSetChanged();
 	}
 	
@@ -886,7 +887,7 @@ public class FileBrowser extends LinearLayout implements FileInfoChangeListener 
 				}
 			}
 		}
-		final FileInfo file = fileOrDir==null || fileOrDir.isDirectory ? itemToSelect : fileOrDir;
+		final FileInfo file = fileOrDir!=null && fileOrDir.isDirectory ? itemToSelect : fileOrDir;
 		final FileInfo dir = fileOrDir!=null && !fileOrDir.isDirectory ? mScanner.findParent(file, mScanner.getRoot()) : fileOrDir;
 		if ( dir!=null ) {
 			mScanner.scanDirectory(mActivity.getDB(), dir, new Runnable() {
