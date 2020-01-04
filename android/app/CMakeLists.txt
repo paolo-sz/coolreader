@@ -11,6 +11,7 @@ set(CR3_ROOT ${PROJECT_SOURCE_DIR}/../..)
 
 include_directories(${CR3_ROOT}/crengine/include)
 include_directories(${CR3_ROOT}/crengine/fc-lang)
+include_directories(${CR3_ROOT}/thirdparty/zlib)
 include_directories(${CR3_ROOT}/thirdparty/libpng)
 include_directories(${CR3_ROOT}/thirdparty/freetype)
 include_directories(${CR3_ROOT}/thirdparty/freetype/include)
@@ -148,6 +149,7 @@ target_link_libraries( # Specifies the target library.
                        cr3engine-3-2-X
 
                        # thirdparty static libs
+                       z
                        png
                        jpeg
                        freetype
@@ -158,4 +160,4 @@ target_link_libraries( # Specifies the target library.
                        # Links the target library to the log library
                        # included in the NDK.
                        ${log-lib}
-                       -lm -lz -ldl)
+                       -lm -ldl)
