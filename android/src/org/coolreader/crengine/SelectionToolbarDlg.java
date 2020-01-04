@@ -21,6 +21,11 @@ import android.widget.PopupWindow;
 import android.widget.PopupWindow.OnDismissListener;
 import android.widget.SeekBar;
 import android.widget.SeekBar.OnSeekBarChangeListener;
+import android.content.Context;
+import android.view.ViewConfiguration;
+import android.view.KeyCharacterMap;
+import android.content.res.Resources;
+import android.content.res.Configuration;
 
 public class SelectionToolbarDlg {
 	PopupWindow mWindow;
@@ -125,7 +130,39 @@ public class SelectionToolbarDlg {
 		restoreReaderMode();
 		mWindow.dismiss();
 	}
-	
+
+	public int getNavBarHeight(CoolReader coolReader) {
+		Context c = coolReader.getApplicationContext();
+		int result = 0;
+		boolean hasMenuKey = ViewConfiguration.get(c).hasPermanentMenuKey();
+		boolean hasBackKey = KeyCharacterMap.deviceHasKey(KeyEvent.KEYCODE_BACK);
+
+//		if(!hasMenuKey && !hasBackKey) {
+			//The device has a navigation bar
+			Resources resources = coolReader.getResources();
+
+			int orientation = coolReader.getResources().getConfiguration().orientation;
+			int resourceId;
+			if (isTablet(c)){
+				resourceId = resources.getIdentifier(orientation == Configuration.ORIENTATION_PORTRAIT ? "navigation_bar_height" : "navigation_bar_height_landscape", "dimen", "android");
+			}  else {
+				resourceId = resources.getIdentifier(orientation == Configuration.ORIENTATION_PORTRAIT ? "navigation_bar_height" : "navigation_bar_width", "dimen", "android");
+			}
+
+			if (resourceId > 0) {
+				return coolReader.getResources().getDimensionPixelSize(resourceId);
+			}
+//		}
+		return result;
+	}
+
+
+	private boolean isTablet(Context c) {
+		return (c.getResources().getConfiguration().screenLayout
+				& Configuration.SCREENLAYOUT_SIZE_MASK)
+				>= Configuration.SCREENLAYOUT_SIZE_LARGE;
+	}
+
 	public SelectionToolbarDlg(CoolReader coolReader, ReaderView readerView, Selection sel )
 	{
 		this.selection = sel;
@@ -282,16 +319,16 @@ public class SelectionToolbarDlg {
 		//mWindow.setWidth(mPanel.getWidth());
 		//mWindow.setHeight(mPanel.getHeight());
 
-		int popupY = location[1] + mAnchor.getHeight() - mPanel.getHeight();
+		int popupY = location[1] + mAnchor.getHeight() - mPanel.getMeasuredHeight() - (coolReader.isFullscreen() ? getNavBarHeight(coolReader): 0);
 		mWindow.showAtLocation(mAnchor, Gravity.TOP | Gravity.CENTER_HORIZONTAL, location[0], popupY);
 //		if ( mWindow.isShowing() )
 //			mWindow.update(mAnchor, 50, 50);
 		//dlg.mWindow.showAsDropDown(dlg.mAnchor);
 		int y = sel.startY;
-		if (y > sel.endY)
+		if (y < sel.endY)
 			y = sel.endY;
 		int maxy = mReaderView.getSurface().getHeight() * 4 / 5; 
-		if (y > maxy) {
+		if (y > popupY) {
 			setReaderMode(); // selection is overlapped by toolbar: set scroll mode and move
 			BackgroundThread.instance().postGUI(new Runnable() {
 				@Override
